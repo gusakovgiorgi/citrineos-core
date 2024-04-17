@@ -5,6 +5,8 @@ services:
     ports:
       - 15672:15672
       - 5672:5672
+    expose:
+      - 15692
     environment:
       RABBITMQ_DEFAULT_USER: 'guest'
       RABBITMQ_DEFAULT_PASS: 'guest'
@@ -39,6 +41,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+  redis_exporter:
+    image: oliver006/redis_exporter
+    expose:
+      - 9121
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: 
+      - '--redis.addr=redis:6379'
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    volumes:
+      - ./otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 55679:55679 # zpages extension
+    expose:
+      - 4317
+      - 4318
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+     - 3000:3000
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -47,6 +77,7 @@ services:
       - ./prometheus:/etc/prometheus/
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+
   jaeger:
     image: jaegertracing/all-in-one:1.55
     ports:
@@ -58,8 +89,9 @@ services:
       - 14269:14269
       - 14250:14250
       - 9411:9411
-      - 4317:4317
-      - 4318:4318
+    expose:
+      - 4318
+      - 4317
     environment:
       - COLLECTOR_ZIPKIN_HTTP_PORT=:9411
       - COLLECTOR_OTLP_ENABLED=true
@@ -115,6 +147,8 @@ services:
       - 8081:8081
       - 8082:8082
       - 9229:9229
+    expose:
+      - 9464
   directus:
     build:
       context: ..
