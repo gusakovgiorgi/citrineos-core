@@ -1,0 +1,36 @@
+receivers:
+  otlp: # the OTLP receiver the app is sending traces to
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  otlp/jaeger: # Jaeger supports OTLP directly
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  # prometheus:
+  #   endpoint: prometheus:9090/api/v1/write
+  #   namespace: test-space
+  #   const_labels:
+  #     label1: value1
+  #     'another label': spaced value
+  #   send_timestamps: true
+  #   metric_expiration: 180m
+  #   resource_to_telemetry_conversion:
+  #     enabled: true
+
+service:
+  pipelines:
+    traces/dev:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger]
+    # metrics/dev:
+    #   receivers: [otlp]
+    #   exporters: [prometheus]

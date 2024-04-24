@@ -82,6 +82,7 @@ const httpInstrumentation = new HttpInstrumentation({
     }
 })
 
+
 const sdk = new nodeOpentelemetry.NodeSDK({
     traceExporter: new OTLPTraceExporter({
         // optional - default url is http://localhost:4318/v1/traces

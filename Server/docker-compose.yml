@@ -64,6 +64,7 @@ services:
       - 4317
       - 4318
   grafana:
+  # default login and pass: admin:admin
     image: grafana/grafana-enterprise
     container_name: grafana
     restart: unless-stopped
